@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>wedding_planner_app</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\" />
+    <Folder Include="Data\" />
+    <Folder Include="MVVM\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Services\" />
+    <Folder Include="Repository\" />
+    <Folder Include="Resources\Images\" />
+    <Folder Include="Theme\Styles\" />
+  </ItemGroup>
+
+</Project>
