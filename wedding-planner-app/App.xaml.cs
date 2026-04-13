@@ -43,7 +43,8 @@ namespace QuanLyTiecCuoi
                             if (type.Name.EndsWith("Service") ||
                                 type.Name.EndsWith("Repository") ||
                                 type.Name.EndsWith("ViewModel") ||
-                                type.Name.EndsWith("Window"))
+                                type.Name.EndsWith("Window") ||
+                                type.Name.EndsWith("Page"))
                             {
                                 services.AddTransient(type);
                             }
