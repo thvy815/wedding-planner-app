@@ -1,0 +1,79 @@
+﻿<Window x:Class="QuanLyTiecCuoi.MVVM.View.DichVu.ChiTietTC"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Chi Tiết Dịch Vụ"
+        Height="550" Width="400"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Grid>
+        <Border CornerRadius="20" Padding="5" BorderBrush="#673500" BorderThickness="2" Background="#FFF">
+            <StackPanel Background="#ffffee">
+                <!-- Header -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,10,10,0" Width="344">
+                    <TextBlock Text="Chi tiết dịch vụ"
+                               TextAlignment="Center"
+                               Width="219" Height="32"
+                               FontSize="25"
+                               FontFamily="Cambria"
+                               FontWeight="Bold"
+                               Margin="50,0,20,0"
+                               VerticalAlignment="Center"/>
+                    <Button x:Name="btnClose"
+                            Content="✕"
+                            Background="#ffffee"
+                            Width="18"
+                            Height="22"
+                            Margin="30,0,0,0"
+                            BorderThickness="0"
+                            Click="BtnClose_Click"/>
+                </StackPanel>
+
+                <!-- Hình ảnh -->
+                <Image Source="{Binding HinhAnh}"
+                       Width="300" Height="270"
+                       Stretch="UniformToFill"
+                       Margin="10"/>
+
+                <!-- Tên dịch vụ -->
+                <TextBlock Text="{Binding TenDichVu}"
+                           FontWeight="Bold"
+                           FontSize="20"
+                           FontFamily="Cambria"
+                           TextAlignment="Center"
+                           Margin="5,10,5,0"/>
+
+                <!-- Giá -->
+                <TextBlock Text="{Binding DonGia, StringFormat=' {0:N0} VND'}"
+                           FontFamily="Cambria"
+                           FontSize="20"
+                           TextAlignment="Center"
+                           Foreground="DarkGreen"
+                           Margin="5,10,5,0"/>
+
+                <!-- Mô tả -->
+                <TextBlock Text="{Binding MoTa}"
+                           FontSize="16"
+                           FontFamily="Cambria"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="10,10,10,10"
+                           MaxHeight="150"
+                           Padding="5">
+                                    <TextBlock.Resources>
+                        <Style TargetType="ScrollViewer">
+                            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                        </Style>
+                    </TextBlock.Resources>
+                </TextBlock>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
