@@ -53,6 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="MVVM\View\Sanh\" />
     <Folder Include="Resources\Images\MonAn\" />
     <Folder Include="Resources\Images\DichVu\" />
   </ItemGroup>
