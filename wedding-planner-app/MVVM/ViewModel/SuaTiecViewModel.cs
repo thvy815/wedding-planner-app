@@ -132,7 +132,7 @@ namespace QuanLyTiecCuoi.MVVM.ViewModel
             var loaiSanh = _datTiecService.GetLoaiSanhById(sanh.MaLoaiSanh);
             if (loaiSanh != null)
             {
-                decimal tongTienBan = MonAnDaChon.Sum(mon => mon.DonGia*mon.SoLuong);
+                decimal tongTienBan = MonAnDaChon.Sum(mon => mon.DonGia * mon.SoLuong);
                 if (tongTienBan < loaiSanh.DonGiaBanToiThieu)
                 {
                     MessageBox.Show($"Tổng tiền bàn ({tongTienBan:N0}đ) phải >= đơn giá tối thiểu ({loaiSanh.DonGiaBanToiThieu:N0} đ).", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -148,11 +148,11 @@ namespace QuanLyTiecCuoi.MVVM.ViewModel
 
             var soNgayConLai = (TiecMoi.NgayDaiTiec.Date - DateTime.Today).TotalDays;
 
-            if (soNgayConLai < 7)
-            {
-                MessageBox.Show("Ngày đãi tiệc phải cách ngày hôm nay ít nhất 7 ngày.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
+            // if (soNgayConLai < 7)
+            // {
+            //     MessageBox.Show("Ngày đãi tiệc phải cách ngày hôm nay ít nhất 7 ngày.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            //     return false;
+            // }
 
             return true;
         }

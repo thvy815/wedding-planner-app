@@ -2,17 +2,26 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using QuanLyTiecCuoi.Core;
 using QuanLyTiecCuoi.Data;
+using QuanLyTiecCuoi.MVVM.View;
+using QuanLyTiecCuoi.MVVM.View.DatTiec;
+using QuanLyTiecCuoi.MVVM.View.DichVu;
+using QuanLyTiecCuoi.MVVM.View.HoaDon;
 using QuanLyTiecCuoi.MVVM.View.Login;
 using QuanLyTiecCuoi.MVVM.View.MainVindow;
+using QuanLyTiecCuoi.MVVM.View.MonAn;
+using QuanLyTiecCuoi.MVVM.View.TuyChinh;
 using QuanLyTiecCuoi.MVVM.ViewModel;
+using QuanLyTiecCuoi.MVVM.ViewModel.DichVu;
+using QuanLyTiecCuoi.MVVM.ViewModel.MonAn;
 using QuanLyTiecCuoi.Repository;
 using QuanLyTiecCuoi.Services;
 using System.Configuration;
 using System.Data;
 using System.Security.Cryptography;
 using System.Windows;
-using System.Reflection;
+using System.Windows.Controls;
 
 
 namespace QuanLyTiecCuoi
@@ -30,44 +39,85 @@ namespace QuanLyTiecCuoi
                 .ConfigureServices((context, services) =>
                 {
                     string connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+                    Console.WriteLine(">>> Connection string: " + connectionString);
 
                     services.AddDbContext<WeddingDbContext>(options =>
                         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-                    var assembly = Assembly.GetExecutingAssembly();
+                    //interface 
+                    services.AddSingleton<IWindowService, WindowService>();
+                    services.AddTransient<HoaDonRepository>();
+                    services.AddTransient<NhanVienRepository>();
+                    services.AddTransient<DatTiecRepository>();
+                    services.AddTransient<MonAnRepository>();
+                    services.AddTransient<DichVuRepository>();
+                    services.AddScoped<ChiTietMenuRepository>();
+                    services.AddScoped<ChiTietDichVuRepository>();
+                    services.AddTransient<ThamSoRepository>();
+                    services.AddTransient<CaRepository>();
+                    services.AddTransient<LoaiSanhRepository>();
+                    services.AddTransient<SanhRepository>();
 
-                    foreach (var type in assembly.GetTypes())
-                    {
-                        if (type.IsClass && !type.IsAbstract)
-                        {
-                            if (type.Name.EndsWith("Service") ||
-                                type.Name.EndsWith("Repository") ||
-                                type.Name.EndsWith("ViewModel") ||
-                                type.Name.EndsWith("Window") ||
-                                type.Name.EndsWith("Page") ||
-                                type.Name.EndsWith("View"))
-                            {
-                                services.AddTransient(type);
-                            }
-                        }
-                    }
+                    services.AddTransient<HoaDonService>();
+                    services.AddTransient<LoginService>();
+                    services.AddTransient<DatTiecService>();
+                    services.AddTransient<DichVuService>();
+                    services.AddTransient<MonAnService>();
+                    services.AddScoped<ChiTietDichVuService>();
+                    services.AddScoped<ChiTietMenuService>();
+                    services.AddTransient<CaService>();
+                    services.AddTransient<LoaiSanhService>();
+                    services.AddTransient<SanhService>();
+                    services.AddTransient<STTConverter>();
+
+                    // Các ViewModel
+                    services.AddTransient<MainWindowViewModel>();
+
+                    services.AddTransient<LoginViewModel>();
+                    services.AddTransient<HoaDonViewModel>();
+                    services.AddTransient<ControlBarViewModel>();
+                    services.AddTransient<TuyChinhViewModel>();
+                    services.AddTransient<DatTiecViewModel>();
+                    services.AddTransient<SuaTiecViewModel>();
+                    services.AddTransient<ThemTiecViewModel>();
+                    services.AddTransient<ChonMonAnViewModel>();
+                    services.AddTransient<ChonDichVuViewModel>();
+                    services.AddTransient<TuyChinhMonAnViewModel>();
+                    services.AddTransient<TuyChinhDichVuViewModel>();
+                    services.AddTransient<SanhViewModel>();
+                    services.AddTransient<LoaiSanhViewModel>();
+
+                    // Các View
+                    services.AddTransient<MainWindow>();
+                    services.AddTransient<HoaDonPage>();
+                    services.AddTransient<ChiTietHoaDonWindow>();
+                    services.AddTransient<TuyChinhPage>();
+                    services.AddTransient<LoginWindow>();
+                    services.AddTransient<DatTiecView>();
+                    services.AddTransient<SuaTiecView>();
+                    services.AddTransient<ThemTiecView>();
+                    services.AddTransient<ChonMonAn>();
+                    services.AddTransient<ChonDichVu>();
+                    services.AddTransient<TuyChinhMonAn>();
+                    services.AddTransient<TuyChinhDichVu>();
+                    services.AddTransient<SanhView>();
+                    services.AddTransient<DSLoaiSanhView>();
+                    services.AddTransient<DSSanhView>();
+                    services.AddTransient<QLDSSanhView>();
+                    services.AddTransient<AddOrEditLoaiSanhWindow>();
+                    services.AddTransient<AddOrEditSanhWindow>();
                 })
                 .Build();
         }
         protected override async void OnStartup(StartupEventArgs e)
         {
+
             await AppHost.StartAsync();
 
-            try
-            {
-                var loginWindow = AppHost.Services.GetRequiredService<LoginWindow>();
+            // Tự show LoginWindow (ví dụ)
 
-                loginWindow.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("ERROR: " + ex.ToString());
-            }
+            var loginWindow = AppHost.Services.GetRequiredService<LoginWindow>();
+            loginWindow.Show();
 
             base.OnStartup(e);
         }

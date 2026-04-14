@@ -1,4 +1,4 @@
-using QuanLyTiecCuoi.Data.Models;
+﻿using QuanLyTiecCuoi.Data.Models;
 using QuanLyTiecCuoi.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,13 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace QuanLyTiecCuoi.Repository
 {
-    /// <summary>
-    /// OPTIMIZATIONS:
-    /// 1. Added .Include() for navigation properties to prevent N+1 queries
-    /// 2. Fixed AddHoaDon() - Eliminated N+1 loop queries (was querying in foreach)
-    /// 3. Changed GetSanhsTrong() - Now uses LINQ to Entities instead of LINQ to Objects
-    /// 4. Added AsNoTracking() for read-only queries to reduce memory
-    /// </summary>
     public class DatTiecRepository
     {
         private readonly WeddingDbContext _context;
@@ -27,55 +20,30 @@ namespace QuanLyTiecCuoi.Repository
             return _context.DatTiecs
                 .Include(dt => dt.CaSanh)
                 .Include(dt => dt.Sanh)
-                .AsNoTracking()
                 .OrderBy(dt => dt.NgayDaiTiec)
                 .ToList();
         }
-
         public List<HOADON> GetAllHoaDon()
         {
             return _context.HoaDons
-                .AsNoTracking()
                 .ToList();
         }
-
         public DATTIEC? GetDatTiecById(int id)
         {
-            return _context.DatTiecs
-                .Include(dt => dt.CaSanh)
-                .Include(dt => dt.Sanh)
-                .AsNoTracking()
-                .FirstOrDefault(d => d.MaDatTiec == id);
+            return _context.DatTiecs.FirstOrDefault(d => d.MaDatTiec == id);
         }
-
         public List<DATTIEC> GetDatTiecByCoDau(string name)
         {
-            return _context.DatTiecs
-                .Include(dt => dt.CaSanh)
-                .Include(dt => dt.Sanh)
-                .Where(d => d.TenCoDau == name)
-                .AsNoTracking()
-                .ToList();
+            return _context.DatTiecs.Where(d => d.TenCoDau == name).ToList();
         }
-
         public List<DATTIEC> GetDatTiecByChuRe(string name)
         {
-            return _context.DatTiecs
-                .Include(dt => dt.CaSanh)
-                .Include(dt => dt.Sanh)
-                .Where(d => d.TenChuRe == name)
-                .AsNoTracking()
-                .ToList();
+            return _context.DatTiecs.Where(d => d.TenChuRe == name).ToList();
         }
 
         public List<DATTIEC> GetDatTiecByPhone(string SDT)
         {
-            return _context.DatTiecs
-                .Include(dt => dt.CaSanh)
-                .Include(dt => dt.Sanh)
-                .Where(d => d.SDT == SDT)
-                .AsNoTracking()
-                .ToList();
+            return _context.DatTiecs.Where(d => d.SDT == SDT).ToList();
         }
 
         public DATTIEC? GetDATTIEC(int maSanh, DateTime ngay, int maCa)
@@ -116,23 +84,18 @@ namespace QuanLyTiecCuoi.Repository
                 _context.SaveChanges();
             }
         }
-
         public List<CASANH> GetAllCaSanhs()
         {
             return _context.CaSanhs
                 .Where(ca => !ca.TinhTrang) // Lọc ra các ca chưa bị xóa
-                .AsNoTracking()
                 .ToList();
         }
-
         public List<SANH> GetAllSanhs()
         {
             return _context.Sanhs
                 .Where(s => !s.TinhTrang) // Lọc ra các sảnh chưa bị xóa
-                .AsNoTracking()
                 .ToList();
         }
-
         public bool KiemTraSanhDaDat(int maSanh, DateTime ngay, int maCa)
         {
             return _context.DatTiecs.Any(dt =>
@@ -140,21 +103,17 @@ namespace QuanLyTiecCuoi.Repository
                 dt.NgayDaiTiec.Date == ngay.Date &&
                 dt.MaCa == maCa);
         }
-
-        /// <summary>
-        /// OPTIMIZATION: Changed from LINQ to Objects to pure LINQ to Entities
-        /// Previously: Loaded all data, then filtered in memory
-        /// Now: Filters in database (much faster for large datasets)
-        /// </summary>
         public List<SANH> GetSanhsTrong(DateTime ngayDaiTiec, int maCa)
         {
-            // All filtering done in database query - NO ToList() in the middle
+            // Lấy danh sách mã sảnh đã được đặt vào ngày và ca đó
+            var sanhsDaDat = _context.DatTiecs
+                .Where(dt => dt.NgayDaiTiec.Date == ngayDaiTiec.Date && dt.MaCa == maCa)
+                .Select(dt => dt.MaSanh)
+                .ToList();
+
+            // Trả về các sảnh KHÔNG nằm trong danh sách đã đặt
             var sanhsTrong = _context.Sanhs
-                .AsNoTracking()
-                .Where(s => !s.TinhTrang && !_context.DatTiecs.Any(dt =>
-                    dt.MaSanh == s.MaSanh &&
-                    dt.NgayDaiTiec.Date == ngayDaiTiec.Date &&
-                    dt.MaCa == maCa))
+                .Where(s => (!sanhsDaDat.Contains(s.MaSanh) && s.TinhTrang == false))
                 .ToList();
 
             return sanhsTrong;
@@ -162,65 +121,36 @@ namespace QuanLyTiecCuoi.Repository
 
         public LOAISANH GetLoaiSanhById(int maLoaiSanh)
         {
-            return _context.LoaiSanhs
-                .AsNoTracking()
-                .FirstOrDefault(ls => ls.MaLoaiSanh == maLoaiSanh);
+            return _context.LoaiSanhs.FirstOrDefault(ls => ls.MaLoaiSanh == maLoaiSanh);
         }
-
         public HOADON? GetHoaDonTheoMaDatTiec(int maDatTiec)
         {
-            return _context.HoaDons
-                .AsNoTracking()
-                .FirstOrDefault(hd => hd.MaDatTiec == maDatTiec);
+            return _context.HoaDons.FirstOrDefault(hd => hd.MaDatTiec == maDatTiec);
         }
-
         public decimal tinhTienDatCoc(decimal a, decimal b)
         {
-            decimal tiLeDC = _context.ThamSos
-                .AsNoTracking()
-                .FirstOrDefault().PhanTramDatCoc;
-            decimal c = tiLeDC * (a + b);
+            decimal tiLeDC = _context.ThamSos.FirstOrDefault().PhanTramDatCoc;
+            decimal c = tiLeDC*(a + b);
             return c;
         }
-
-        /// <summary>
-        /// OPTIMIZATION: Eliminated N+1 query problem
-        /// Previously: 1 query to get ChiTietMenu + loop with N queries for each MonAn
-        ///            1 query to get ChiTietDichVu + loop with N queries for each DichVu
-        /// Now: 3 database queries total (load all data first, then calculate)
-        /// </summary>
         public void AddHoaDon(DATTIEC datTiec)
         {
-            // Load all related data in bulk queries (NOT in foreach loops)
-            var chiTietMenus = _context.ChiTietMenus
-                .Include(ctm => ctm.MonAn)
-                .Where(ctm => ctm.MaDatTiec == datTiec.MaDatTiec)
-                .AsNoTracking()
-                .ToList();
+            var chiTietMenu = _context.ChiTietMenus.Where(ctm => ctm.MaDatTiec == datTiec.MaDatTiec).ToList();
+            var chiTietDichVu = _context.ChiTietDVTiecs.Where(ctdv => ctdv.MaDatTiec == datTiec.MaDatTiec).ToList();
 
-            var chiTietDichVus = _context.ChiTietDVTiecs
-                .Include(ctdv => ctdv.DichVu)
-                .Where(ctdv => ctdv.MaDatTiec == datTiec.MaDatTiec)
-                .AsNoTracking()
-                .ToList();
-
-            // Now calculate prices in memory (no more database queries in loops)
             decimal donGiaBan = 0;
-            foreach (var ct in chiTietMenus)
+            foreach (var ct in chiTietMenu)
             {
-                if (ct.MonAn != null)
-                    donGiaBan += ct.MonAn.DonGia * ct.MonAn.SoLuong;
+                var monAn = _context.MonAns.Where(monAn => monAn.MaMon == ct.MaMon).FirstOrDefault();
+                donGiaBan += monAn.DonGia * monAn.SoLuong;
             }
-
             decimal tongTienBan = donGiaBan * datTiec.SoLuongBan;
-
             decimal tongTienDV = 0;
-            foreach (var ctdv in chiTietDichVus)
+            foreach (var ctdv in chiTietDichVu)
             {
-                if (ctdv.DichVu != null)
-                    tongTienDV += ctdv.DichVu.DonGia * ctdv.DichVu.SoLuong;
+                var dichVu = _context.DichVus.Where(dichVu => dichVu.MaDichVu == ctdv.MaDichVu).FirstOrDefault();
+                tongTienDV += dichVu.DonGia * dichVu.SoLuong;
             }
-
             decimal tongTien = tongTienBan + tongTienDV;
 
             var hoaDon = new HOADON
@@ -235,16 +165,13 @@ namespace QuanLyTiecCuoi.Repository
                 SoLuongBan = datTiec.SoLuongBan,
                 TienPhaiThanhToan = tongTienBan + tongTienDV - datTiec.TienDatCoc,
             };
-
             _context.HoaDons.Add(hoaDon);
             _context.SaveChanges();
         }
 
         public SANH? GetSanhById(int maSanh)
         {
-            return _context.Sanhs
-                .AsNoTracking()
-                .FirstOrDefault(s => s.MaSanh == maSanh);
+            return _context.Sanhs.FirstOrDefault(s => s.MaSanh == maSanh);
         }
     }
 }

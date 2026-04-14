@@ -1,0 +1,124 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using QuanLyTiecCuoi.Data;
+using QuanLyTiecCuoi.MVVM.View.Login;
+using QuanLyTiecCuoi.MVVM.View.MainVindow;
+using QuanLyTiecCuoi.MVVM.ViewModel;
+using QuanLyTiecCuoi.Repository;
+using QuanLyTiecCuoi.Services;
+using System.Configuration;
+using System.Data;
+using System.Security.Cryptography;
+using System.Windows;
+using System.Reflection;
+
+
+namespace QuanLyTiecCuoi
+{
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// 
+    /// OPTIMIZATIONS:
+    /// 1. Removed reflection scanning - instead use explicit registration
+    /// 2. Changed Transient to Scoped for Services/Repositories to reduce allocations
+    /// 3. Added DbContext pooling for connection reuse
+    /// 4. Lazy loading of services (only create when needed)
+    /// </summary>
+
+    public partial class App : Application
+    {
+        public static IHost AppHost { get; private set; }
+        
+        public App()
+        {
+            AppHost = Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    string connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+
+                    // Optimize DbContext: Use pooling for connection reuse
+                    services.AddDbContextPool<WeddingDbContext>(options =>
+                        options.UseMySql(
+                            connectionString, 
+                            ServerVersion.AutoDetect(connectionString),
+                            mysqlOptions => mysqlOptions.EnableRetryOnFailure(3)
+                        ),
+                        poolSize: 128 // Allow up to 128 pooled contexts
+                    );
+
+                    // REPOSITORIES - Scoped (shared per request/operation) instead of Transient
+                    services.AddScoped<CaRepository>();
+                    services.AddScoped<ChiTietDichVuRepository>();
+                    services.AddScoped<ChiTietMenuRepository>();
+                    services.AddScoped<DatTiecRepository>();
+                    services.AddScoped<DichVuRepository>();
+                    services.AddScoped<HoaDonRepository>();
+                    services.AddScoped<LoaiSanhRepository>();
+                    services.AddScoped<MonAnRepository>();
+                    services.AddScoped<NhanVienRepository>();
+                    services.AddScoped<SanhRepository>();
+                    services.AddScoped<ThamSoRepository>();
+
+                    // SERVICES - Scoped (shared per request/operation) instead of Transient
+                    services.AddScoped<CaService>();
+                    services.AddScoped<ChiTietDichVuService>();
+                    services.AddScoped<ChiTietMenuService>();
+                    services.AddScoped<DatTiecService>();
+                    services.AddScoped<DichVuService>();
+                    services.AddScoped<HoaDonService>();
+                    services.AddScoped<LoaiSanhService>();
+                    services.AddScoped<LoginService>();
+                    services.AddScoped<MonAnService>();
+                    services.AddScoped<SanhService>();
+
+                    // VIEWMODELS - Transient is OK for ViewModels (they're lightweight and stateful)
+                    services.AddTransient<ChonDichVuViewModel>();
+                    services.AddTransient<ChonMonAnViewModel>();
+                    services.AddTransient<ControlBarViewModel>();
+                    services.AddTransient<DatTiecViewModel>();
+                    services.AddTransient<HoaDonViewModel>();
+                    services.AddTransient<LoaiSanhViewModel>();
+                    services.AddTransient<LoginViewModel>();
+                    services.AddTransient<MainWindowViewModel>();
+                    services.AddTransient<SanhViewModel>();
+                    services.AddTransient<SuaTiecViewModel>();
+                    services.AddTransient<ThemTiecViewModel>();
+                    services.AddTransient<TuyChinhDichVuViewModel>();
+                    services.AddTransient<TuyChinhMonAnViewModel>();
+                    services.AddTransient<TuyChinhViewModel>();
+
+                    // VIEWS/WINDOWS
+                    services.AddTransient<LoginWindow>();
+                    services.AddTransient<MainWindow>();
+                    services.AddSingleton<IWindowService, WindowService>();
+                })
+                .Build();
+        }
+
+        protected override async void OnStartup(StartupEventArgs e)
+        {
+            await AppHost.StartAsync();
+
+            try
+            {
+                var loginWindow = AppHost.Services.GetRequiredService<LoginWindow>();
+                loginWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("ERROR: " + ex.ToString());
+            }
+
+            base.OnStartup(e);
+        }
+
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            await AppHost.StopAsync();
+            AppHost.Dispose();
+            base.OnExit(e);
+        }
+    }
+}
