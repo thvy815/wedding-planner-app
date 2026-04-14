@@ -31,6 +31,8 @@ namespace QuanLyTiecCuoi.MVVM.View.DatTiec
             viewModel = new ThemTiecViewModel(sanh, ngay, maCa);
             this.DataContext = viewModel;
 
+            viewModel.TiecMoi.NgayDatTiec = DateTime.Now;
+
             viewModel.LoadDanhSachCa();
             viewModel.LoadDanhSachSanh();
 

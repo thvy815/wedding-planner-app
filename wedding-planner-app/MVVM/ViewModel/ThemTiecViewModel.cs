@@ -45,7 +45,7 @@ namespace QuanLyTiecCuoi.MVVM.ViewModel
             _chiTietMenuService = App.AppHost.Services.GetRequiredService<ChiTietMenuService>();
             _chiTietDichVuService = App.AppHost.Services.GetRequiredService<ChiTietDichVuService>();
 
-
+           
             TiecMoi = new DATTIEC
             {
                 MaSanh = sanh.MaSanh,
@@ -150,11 +150,11 @@ namespace QuanLyTiecCuoi.MVVM.ViewModel
 
             var soNgayConLai = (TiecMoi.NgayDaiTiec.Date - DateTime.Today).TotalDays;
 
-            if (soNgayConLai < 7)
-            {
-                MessageBox.Show("Ngày đãi tiệc phải cách ngày hôm nay ít nhất 7 ngày.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
+            //if (soNgayConLai < 7)
+            //{
+            //    MessageBox.Show("Ngày đãi tiệc phải cách ngày hôm nay ít nhất 7 ngày.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            //    return false;
+            //}
 
             return true;
         }
